@@ -1,20 +1,22 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 
-const Show = ({ person }) => {
-  console.log('Show', person.name)
-  return (
-    <div>
-      <li>{person.name} {person.number}</li>
-    </div>
-  )
+const Show = ({ person, filter }) => {
+  console.log('Show name', person.name)
+  console.log('filter is', filter)
+  if (filter === '' || filterPerson({person, filter})) {
+    return (
+      <div>
+        <li>{person.name} {person.number}</li>
+      </div>
+    )
+  } else {
+    console.log('name not shown')
+    return
+  }
 }
 
 const checkDuplicate = ( {newName, persons} ) => {
-  console.log('checking for duplicates...')
-  console.log('persons', persons)
-  console.log('checking', newName)
-  console.log(persons.includes(newName))
-
   const filteredList = persons.filter(person => person.name === newName)
   
   if (filteredList.length > 0) {
@@ -25,13 +27,33 @@ const checkDuplicate = ( {newName, persons} ) => {
   return true
 }
 
+const filterPerson = ( {person, filter} ) => {
+  const name = person.name.toLowerCase()
+  const filterString = filter.toLowerCase()
+
+  return (
+    name.includes(filterString)
+  )
+}
+
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '+358 0 123456'}
-  ]) 
-  
+  const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
+  const [newFilter, setFilter] = useState('')
+
+  const hook = () => {
+    console.log('effect')
+    axios
+    .get('http://localhost:3001/persons')
+    .then(response => {
+        setPersons(response.data)
+        console.log('promise fulfilled')
+    })
+  }
+
+  useEffect(hook, [])
+
 
   const addPerson = (event) => {
     event.preventDefault()
@@ -57,12 +79,17 @@ const App = () => {
     }
   }
 
-  const handleNameChange =(event) => {
+  const handleFilter = (event) => {
+    console.log('filter handled')
+    setFilter(event.target.value)
+  }
+
+  const handleNameChange = (event) => {
     console.log('name change', event.target.value)
     setNewName(event.target.value)
   }
 
-  const handleNumberChange =(event) => {
+  const handleNumberChange = (event) => {
     console.log('number change', event.target.value)
     setNewNumber(event.target.value)
   }
@@ -70,6 +97,11 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <div> filter shown with: <input
+        value={newFilter}
+        onChange={handleFilter}
+      /></div>
+      <h3>Add a new</h3>
       <form onSubmit={addPerson}>
         <div>name: <input 
           value={newName} 
@@ -81,10 +113,10 @@ const App = () => {
         /></div>
         <div><button type="submit">add</button></div>
       </form>
-      <h2>Numbers</h2>
+      <h3>Numbers</h3>
       <ul>
         {persons.map(person =>
-        <Show key={person.name} person={person} />
+        <Show key={person.name} person={person} filter={newFilter} />
         )}
       </ul>
     </div>
