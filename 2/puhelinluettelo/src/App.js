@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import personService from './services/persons'
 
-const Show = ({ person, filter }) => {
-  console.log('Show name', person.name)
-  console.log('filter is', filter)
+const Show = ({ person, filter, deletePerson }) => {
+  console.log(`person id is ${person.id}`)
   if (filter === '' || filterPerson({person, filter})) {
     return (
-      <div>
-        <li>{person.name} {person.number}</li>
-      </div>
+        <li>
+          {person.name} 
+          {person.number}
+          <button onClick={deletePerson}>Delete</button>
+        </li>
     )
   } else {
     console.log('name not shown')
@@ -44,38 +45,53 @@ const App = () => {
 
   const hook = () => {
     console.log('effect')
-    axios
-    .get('http://localhost:3001/persons')
-    .then(response => {
-        setPersons(response.data)
+    personService
+      .getAll()
+        .then(initialPersons => {
+        setPersons(initialPersons)
         console.log('promise fulfilled')
     })
   }
 
   useEffect(hook, [])
 
-
   const addPerson = (event) => {
     event.preventDefault()
-    console.log('adding name', newName)
-    console.log('adding number', newNumber)
-
-    const nameObject = {
+    console.log('adding person', newName, newNumber)
+    const personObject = {
       name: newName,
-      number: newNumber
+      number: newNumber,
     }
 
-    setNewName('')
-    setNewNumber('')
-
     if (checkDuplicate({newName, persons})) {
-      console.log(nameObject)
-      setPersons(persons.concat(nameObject))
-      console.log('name added')
-      console.log(persons)
-      return
+      personService
+        .create(personObject)
+          .then(returnedPerson => {
+          setPersons(persons.concat(returnedPerson))
+          setNewName('')
+          setNewNumber('')
+          console.log('name added')
+          console.log({persons})
+        })
     } else {
       return window.alert(`${newName} already exists in phonebook`)
+    }
+  }
+
+  const deletePerson = (id) => {
+    console.log(`Attempting to delete ${id}`)
+    const newPersonList = persons.filter(person => person.id !== id )
+    console.log('new person list is', {newPersonList})
+    console.log('old person list is', {persons})
+
+
+    if (window.confirm(`Are you sure?`)) {
+      personService
+        .remove(id)
+          .then(response => {
+            setPersons(newPersonList)
+            console.log(`removed ${id}`)
+          })
     }
   }
 
@@ -116,7 +132,12 @@ const App = () => {
       <h3>Numbers</h3>
       <ul>
         {persons.map(person =>
-        <Show key={person.name} person={person} filter={newFilter} />
+          <Show 
+            key={person.id} 
+            person={person} 
+            filter={newFilter} 
+            deletePerson={() => deletePerson(person.id)}
+          />
         )}
       </ul>
     </div>

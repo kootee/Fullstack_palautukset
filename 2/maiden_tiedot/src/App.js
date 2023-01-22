@@ -38,7 +38,7 @@ const App = () => {
 
   useEffect(hook, [])
 
-  const handleChange = (event) => {
+  const handleChange = event => {
     console.log('name change', event.target.value)
     setKey(event.target.value)
   }
