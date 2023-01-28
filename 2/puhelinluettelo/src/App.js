@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import personService from './services/persons'
+import './index.css'
 
 const Show = ({ person, filter, deletePerson }) => {
   console.log(`person id is ${person.id} and name is ${person.name} and number is ${person.number}`)
@@ -34,11 +35,33 @@ const filterPerson = ( {person, filter} ) => {
   )
 }
 
+const Notification = ({message, messageType}) => {
+  console.log("message type is", messageType)
+  if (message === null) {
+    return null
+  }
+  if (messageType) {
+    return (
+      <div className='success'>
+        {message}
+      </div>
+    )    
+  }
+    return (
+      <div className='error'>
+        {message}
+      </div>
+    )
+
+}
+
 const App = () => {
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setFilter] = useState('')
+  const [currentMessage, setMessage] = useState(null)
+  const [messageType, setMessageType] = useState(true)
 
   const hook = () => {
     console.log('effect')
@@ -65,10 +88,15 @@ const App = () => {
         .create(personObject)
           .then(returnedPerson => {
           setPersons(persons.concat(returnedPerson))
+          setMessage(
+            `${newName} was successfully added to the phonebook`
+          )
+          setMessageType(true)
+          setTimeout(() => {
+            setMessage(null)
+          }, 5000);
           setNewName('')
           setNewNumber('')
-          console.log('name added')
-          console.log({persons})
         })
     } else {
       if (window.confirm(`are you sure you want to update number for ${newName}`)) {
@@ -82,6 +110,15 @@ const App = () => {
               setNewName('')
               setNewNumber('')
             })
+            .catch(error => {
+              setMessage(
+                `Information of ${newName} has already been removed from server`
+              )
+              setMessageType(false)
+              setTimeout(() => {
+                setMessage(null)
+              }, 5000);
+            })
       }
     }
   }
@@ -93,7 +130,6 @@ const App = () => {
         .remove(id)
           .then(response => {
             setPersons(persons.filter(person => person.id !== id ))
-            console.log(`removed ${id}`)
           })
     }
   }
@@ -116,6 +152,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={currentMessage} messageType={messageType}/> 
       <div> filter shown with: <input
         value={newFilter}
         onChange={handleFilter}

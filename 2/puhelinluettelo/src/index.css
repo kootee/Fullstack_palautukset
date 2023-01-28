@@ -1,0 +1,19 @@
+.success {
+    color: rgb(142, 188, 41);
+    background-color: gainsboro;
+    padding: 10px;
+    font-size: 20px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border-style: dashed;
+}
+
+.error {
+    color: rgb(203, 41, 16);
+    background-color: gainsboro;
+    padding: 10px;
+    font-size: 20px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border-style: dashed;
+}
