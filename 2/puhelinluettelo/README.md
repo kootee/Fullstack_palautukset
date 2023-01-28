@@ -1,1 +1,1 @@
-Puhelinluettelo, tehtävät 2.12 - 2.15
+Puhelinluettelo, tehtävät 2.1 - 2.15
