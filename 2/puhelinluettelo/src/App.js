@@ -2,29 +2,26 @@ import { useState, useEffect } from 'react'
 import personService from './services/persons'
 
 const Show = ({ person, filter, deletePerson }) => {
-  console.log(`person id is ${person.id}`)
+  console.log(`person id is ${person.id} and name is ${person.name} and number is ${person.number}`)
   if (filter === '' || filterPerson({person, filter})) {
     return (
         <li>
-          {person.name} 
+          {person.name}
           {person.number}
           <button onClick={deletePerson}>Delete</button>
         </li>
     )
-  } else {
-    console.log('name not shown')
-    return
   }
+  console.log('name not shown')
+  
 }
 
 const checkDuplicate = ( {newName, persons} ) => {
   const filteredList = persons.filter(person => person.name === newName)
   
   if (filteredList.length > 0) {
-    console.log("was false")
     return false
   }
-  console.log("was true")
   return true
 }
 
@@ -74,22 +71,28 @@ const App = () => {
           console.log({persons})
         })
     } else {
-      return window.alert(`${newName} already exists in phonebook`)
+      if (window.confirm(`are you sure you want to update number for ${newName}`)) {
+        const updateId = persons.find(person => person.name === newName)
+        const updatedPerson = {...updateId, number: newNumber}
+
+        personService
+          .update(updateId.id, updatedPerson)
+            .then(returnedPerson => {
+              setPersons(persons.map(person => person.id !== newName.id ? person : returnedPerson))
+              setNewName('')
+              setNewNumber('')
+            })
+      }
     }
   }
 
   const deletePerson = (id) => {
     console.log(`Attempting to delete ${id}`)
-    const newPersonList = persons.filter(person => person.id !== id )
-    console.log('new person list is', {newPersonList})
-    console.log('old person list is', {persons})
-
-
     if (window.confirm(`Are you sure?`)) {
       personService
         .remove(id)
           .then(response => {
-            setPersons(newPersonList)
+            setPersons(persons.filter(person => person.id !== id ))
             console.log(`removed ${id}`)
           })
     }
